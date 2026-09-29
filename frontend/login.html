@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Insurance AI Assistant</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="card login-card">
+            <h2>Sign in</h2>
+            <p class="page-subtitle">Authentication isn't implemented yet - see the note below the form.</p>
+
+            <form id="login-form">
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="field">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                </div>
+
+                <p id="login-message" class="info-text"></p>
+
+                <div class="login-actions">
+                    <button type="submit" id="login-button">Login</button>
+                    <button type="button" id="register-button" class="secondary">Register</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/login.js"></script>
+</body>
+</html>

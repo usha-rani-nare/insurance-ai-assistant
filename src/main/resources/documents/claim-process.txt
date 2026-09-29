@@ -1,0 +1,37 @@
+CLAIM PROCESS
+
+This document describes how to file and track an insurance claim.
+
+Step 1 - Notification: Inform the insurer of a planned hospitalization at
+least 48 hours in advance where possible. For emergencies, notify within
+24 hours of admission.
+
+Step 2 - Cashless claims (network hospitals): The hospital's insurance
+desk sends a pre-authorization request directly to the insurer. Once
+approved, the hospital bills the insurer directly for covered expenses,
+and the insured pays only for non-covered items, if any.
+
+Step 3 - Reimbursement claims (non-network hospitals or where cashless was
+not used): The insured pays the hospital directly, then submits a claim
+with the following documents:
+- Completed claim form
+- Original hospital bills and payment receipts
+- Discharge summary
+- Doctor's prescriptions and diagnostic reports
+
+Step 4 - Claim review: The insurer reviews the submitted claim and
+supporting documents. A claim may be marked UNDER_REVIEW while this
+happens.
+
+Step 5 - Decision: The claim is either APPROVED (fully or partially, based
+on policy limits and any applicable deductions) or REJECTED (for example,
+if the treatment falls under an exclusion). Approved reimbursement claims
+are typically settled within 15-30 working days of receiving complete
+documentation.
+
+Claim status values used in this system: SUBMITTED, UNDER_REVIEW,
+APPROVED, REJECTED, SETTLED.
+
+If a claim is rejected, the insured can request the specific reason for
+rejection and, where applicable, submit additional documentation for
+reconsideration.

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Claims - Insurance AI Assistant</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="top-nav">
+        <div class="brand">Insurance AI Assistant</div>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="policy.html">Policy</a>
+            <a href="claims.html" class="active">Claims</a>
+            <a href="assistant.html">AI Assistant</a>
+            <a href="login.html">Logout</a>
+        </nav>
+    </header>
+
+    <main class="page-content">
+        <h1>Claims</h1>
+        <p class="page-subtitle">View your claim history and submit a new claim.</p>
+
+        <div class="card">
+            <h2>Claim history</h2>
+            <p id="claims-status-message" class="info-text">Loading claims...</p>
+            <table id="claims-table" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Claim number</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Submitted</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="claims-table-body"></tbody>
+            </table>
+            <p id="no-claims-message" class="info-text" style="display: none;">No claims found.</p>
+        </div>
+
+        <div class="card">
+            <h2>Submit a claim</h2>
+            <form id="claim-form">
+                <div class="field">
+                    <label for="claim-policy">Policy</label>
+                    <select id="claim-policy" required></select>
+                </div>
+                <div class="field">
+                    <label for="claim-type">Claim type</label>
+                    <select id="claim-type" required>
+                        <option value="">Select a type</option>
+                        <option value="Hospitalization">Hospitalization</option>
+                        <option value="Accident">Accident</option>
+                        <option value="Outpatient">Outpatient</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="claim-description">Description</label>
+                    <textarea id="claim-description" required></textarea>
+                </div>
+                <div class="field">
+                    <label for="claim-amount">Claim amount</label>
+                    <input type="number" id="claim-amount" min="0.01" step="0.01" required>
+                </div>
+
+                <p id="claim-form-message"></p>
+
+                <button type="submit" id="claim-submit-button">Submit claim</button>
+            </form>
+        </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/claims.js"></script>
+</body>
+</html>

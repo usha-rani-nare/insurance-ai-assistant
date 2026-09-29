@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Assistant - Insurance AI Assistant</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="top-nav">
+        <div class="brand">Insurance AI Assistant</div>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="policy.html">Policy</a>
+            <a href="claims.html">Claims</a>
+            <a href="assistant.html" class="active">AI Assistant</a>
+            <a href="login.html">Logout</a>
+        </nav>
+    </header>
+
+    <main class="page-content">
+        <h1>AI Assistant</h1>
+        <p class="page-subtitle">Ask a question about your policy or claims. Answers are grounded in the actual policy documents, with sources shown below each response.</p>
+
+        <div class="card">
+            <div id="chat-window" class="chat-window"></div>
+
+            <div class="chat-input-row">
+                <input type="text" id="chat-input" placeholder="Ask a question...">
+                <button id="chat-send-button">Send</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/assistant.js"></script>
+</body>
+</html>

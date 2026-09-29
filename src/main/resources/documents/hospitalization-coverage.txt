@@ -1,0 +1,30 @@
+HOSPITALIZATION COVERAGE DETAILS
+
+This document explains what counts as covered hospitalization under the
+Health Secure and Family Health Plus plans.
+
+Minimum hospitalization period: A hospital stay must be at least 24
+continuous hours to qualify as in-patient hospitalization, except for the
+day-care procedures listed separately, which are covered without a minimum
+stay requirement.
+
+Covered hospitalization expenses include:
+- Room rent, up to the room rent limit stated in the policy schedule
+- ICU charges
+- Doctor's fees and surgeon's fees
+- Cost of medicines and consumables used during the hospital stay
+- Diagnostic tests conducted during hospitalization
+
+Room rent limit: Room rent is covered up to 1% of the sum insured per day.
+If the insured chooses a room above this limit, associated charges
+(doctor's fees, etc.) may be proportionately reduced, consistent with
+standard health insurance practice.
+
+Cashless hospitalization is available at network hospitals. For
+non-network hospitals, the insured pays first and files a reimbursement
+claim afterward - see claim-process.txt for how to do this.
+
+A hospital stay of a few days for a covered illness (for example,
+observation and treatment of dehydration or fever) is treated the same as
+any other qualifying hospitalization: it is covered under in-patient
+hospitalization, provided the illness itself is not on the exclusions list.

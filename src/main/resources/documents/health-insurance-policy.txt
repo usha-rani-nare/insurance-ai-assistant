@@ -1,0 +1,26 @@
+HEALTH SECURE PLAN - POLICY OVERVIEW
+
+This document describes the general terms of the Health Secure individual
+health insurance plan.
+
+Coverage amount: Up to Rs. 5,00,000 per policy year.
+
+Premium: Rs. 1,200 per month, billed monthly. The premium may change at
+renewal based on the insured's age band and claims history.
+
+Policy term: Health Secure is issued as an annual policy and renews every
+12 months, subject to the insurer's underwriting review at renewal.
+
+What this plan covers, at a summary level:
+- In-patient hospitalization expenses (see hospitalization-coverage.txt for
+  full detail)
+- Pre-hospitalization expenses for up to 30 days before admission
+- Post-hospitalization expenses for up to 60 days after discharge
+- Day-care procedures that do not require a 24-hour hospital stay
+- Ambulance charges up to Rs. 2,000 per hospitalization
+
+What this plan does not cover is listed in exclusions.txt. Claims are
+subject to the process described in claim-process.txt.
+
+This plan does not cover maternity expenses, cosmetic procedures, or
+treatment outside India.

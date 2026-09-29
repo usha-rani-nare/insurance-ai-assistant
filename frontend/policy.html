@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Policy - Insurance AI Assistant</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="top-nav">
+        <div class="brand">Insurance AI Assistant</div>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="policy.html" class="active">Policy</a>
+            <a href="claims.html">Claims</a>
+            <a href="assistant.html">AI Assistant</a>
+            <a href="login.html">Logout</a>
+        </nav>
+    </header>
+
+    <main class="page-content">
+        <h1>Policy details</h1>
+        <p class="page-subtitle">Everything about your active insurance policy.</p>
+
+        <p id="policy-status-message" class="info-text">Loading policy...</p>
+
+        <div id="policy-card" class="card" style="display: none;">
+            <div class="card-grid">
+                <div>
+                    <div class="stat-label">Policy number</div>
+                    <div class="stat-value" id="detail-policy-number">-</div>
+                </div>
+                <div>
+                    <div class="stat-label">Plan</div>
+                    <div class="stat-value" id="detail-plan-name">-</div>
+                </div>
+                <div>
+                    <div class="stat-label">Coverage amount</div>
+                    <div class="stat-value" id="detail-coverage">-</div>
+                </div>
+                <div>
+                    <div class="stat-label">Premium</div>
+                    <div class="stat-value" id="detail-premium">-</div>
+                </div>
+                <div>
+                    <div class="stat-label">Start date</div>
+                    <div class="stat-value" id="detail-start-date">-</div>
+                </div>
+                <div>
+                    <div class="stat-label">End date</div>
+                    <div class="stat-value" id="detail-end-date">-</div>
+                </div>
+                <div>
+                    <div class="stat-label">Status</div>
+                    <div class="stat-value"><span id="detail-status-badge" class="badge">-</span></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/policy.js"></script>
+</body>
+</html>

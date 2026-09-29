@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - Insurance AI Assistant</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="top-nav">
+        <div class="brand">Insurance AI Assistant</div>
+        <nav>
+            <a href="dashboard.html" class="active">Dashboard</a>
+            <a href="policy.html">Policy</a>
+            <a href="claims.html">Claims</a>
+            <a href="assistant.html">AI Assistant</a>
+            <a href="login.html">Logout</a>
+        </nav>
+    </header>
+
+    <main class="page-content">
+        <h1 id="welcome-heading">Dashboard</h1>
+        <p class="page-subtitle">A quick summary of your policy and recent claims.</p>
+
+        <p id="dashboard-status" class="info-text">Loading dashboard...</p>
+
+        <div id="dashboard-content" style="display: none;">
+            <div class="card">
+                <h2>Active policy</h2>
+                <div class="card-grid">
+                    <div>
+                        <div class="stat-label">Plan</div>
+                        <div class="stat-value" id="plan-name">-</div>
+                    </div>
+                    <div>
+                        <div class="stat-label">Policy number</div>
+                        <div class="stat-value" id="policy-number">-</div>
+                    </div>
+                    <div>
+                        <div class="stat-label">Status</div>
+                        <div class="stat-value"><span id="policy-status-badge" class="badge">-</span></div>
+                    </div>
+                    <div>
+                        <div class="stat-label">Expires</div>
+                        <div class="stat-value" id="policy-expiry">-</div>
+                    </div>
+                </div>
+                <p style="margin-top: 14px;"><a href="policy.html">View full policy details &rarr;</a></p>
+            </div>
+
+            <div class="card">
+                <h2>Recent claims</h2>
+                <table id="recent-claims-table">
+                    <thead>
+                        <tr>
+                            <th>Claim number</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-claims-body"></tbody>
+                </table>
+                <p id="no-claims-message" class="info-text" style="display: none;">No claims found.</p>
+                <p style="margin-top: 14px;"><a href="claims.html">View all claims &rarr;</a></p>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

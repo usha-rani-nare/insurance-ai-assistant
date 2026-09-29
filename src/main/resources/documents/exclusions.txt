@@ -1,0 +1,33 @@
+EXCLUSIONS
+
+This document lists what is NOT covered under the Health Secure and Family
+Health Plus plans. This list is illustrative for this demonstration project
+and is not exhaustive.
+
+Not covered under any circumstances:
+- Cosmetic or plastic surgery, unless required to treat injuries from a
+  covered accident
+- Dental treatment, unless it requires hospitalization due to an accident
+- Treatment received outside India
+- Self-inflicted injuries
+- Injuries or illness arising from participation in an adventure sport not
+  declared at policy purchase
+
+Not covered during the initial waiting period:
+- Any illness (other than an accident) within the first 30 days of the
+  policy starting
+- Specific named conditions (for example, cataracts, hernia, and certain
+  joint replacement surgeries) within the first 2 years of continuous
+  coverage
+
+Permanently excluded regardless of waiting period:
+- Maternity and childbirth-related expenses (these require a separate
+  maternity add-on, which is not part of this base plan)
+- Experimental or unproven treatments
+- Expenses for a hospital stay that does not meet the minimum
+  hospitalization period described in hospitalization-coverage.txt, unless
+  it is a listed day-care procedure
+
+If a submitted claim relates to one of these exclusions, the correct
+response is to clearly state that the treatment is not covered under the
+policy, rather than guessing whether an exception might apply.
