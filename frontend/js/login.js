@@ -8,17 +8,19 @@ loginForm.addEventListener("submit", async (event) => {
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
 
-    // There is no real login endpoint yet - see login() in api.js. Rather
-    // than fake a successful authentication, we say so plainly and continue
-    // to the dashboard using the demo user, so the rest of the UI is still
-    // reachable and reviewable.
     loginButton.disabled = true;
-    loginMessage.textContent = `Authentication isn't implemented yet. Continuing to the dashboard as the demo user...`;
+    loginMessage.textContent = "Signing in...";
     loginMessage.className = "info-text";
 
-    setTimeout(() => {
+    try {
+        const result = await login(email, password);
+        saveSession(result);
         window.location.href = "dashboard.html";
-    }, 900);
+    } catch (error) {
+        loginMessage.textContent = error.message;
+        loginMessage.className = "error-text";
+        loginButton.disabled = false;
+    }
 });
 
 registerButton.addEventListener("click", async () => {

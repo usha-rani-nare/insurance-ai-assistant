@@ -37,27 +37,41 @@ class AiAssistantServiceTest {
     @Mock
     private VectorStore vectorStore;
 
+    // Phase 7: AiAssistantService now also depends on InsuranceTools, so the
+    // chain includes a .tools(insuranceTools) call that needs stubbing too.
+    @Mock
+    private InsuranceTools insuranceTools;
+
     private AiAssistantService aiAssistantService;
 
     @BeforeEach
     void setUp() {
-        when(chatClientBuilder.defaultSystem(anyString())).thenReturn(chatClientBuilder);
         when(chatClientBuilder.build()).thenReturn(chatClient);
-        aiAssistantService = new AiAssistantService(chatClientBuilder, vectorStore);
+        aiAssistantService = new AiAssistantService(chatClientBuilder, vectorStore, insuranceTools);
     }
 
     private Document sampleChunk(String source) {
         return new Document("Hospitalization is covered up to the plan's limit.", Map.of("source", source));
     }
 
+    /**
+     * Stubs the full chatClient.prompt().system(...).user(...).tools(...).call().content()
+     * chain used by every non-out-of-scope path in the service.
+     */
+    private void stubChatClientToReturn(String content) {
+        when(chatClient.prompt()).thenReturn(requestSpec);
+        when(requestSpec.system(anyString())).thenReturn(requestSpec);
+        when(requestSpec.user(anyString())).thenReturn(requestSpec);
+        when(requestSpec.tools(any(Object.class))).thenReturn(requestSpec);
+        when(requestSpec.call()).thenReturn(callResponseSpec);
+        when(callResponseSpec.content()).thenReturn(content);
+    }
+
     @Test
     void returnsAnAnswerWithSourcesWhenRelevantChunksAreFound() {
         when(vectorStore.similaritySearch(any(SearchRequest.class)))
                 .thenReturn(List.of(sampleChunk("hospitalization-coverage.txt")));
-        when(chatClient.prompt()).thenReturn(requestSpec);
-        when(requestSpec.user(anyString())).thenReturn(requestSpec);
-        when(requestSpec.call()).thenReturn(callResponseSpec);
-        when(callResponseSpec.content()).thenReturn("Yes, hospitalization is covered.");
+        stubChatClientToReturn("Yes, hospitalization is covered.");
 
         AiChatResponse response = aiAssistantService.answer("Does my policy cover hospitalization?");
 
@@ -66,12 +80,16 @@ class AiAssistantServiceTest {
     }
 
     @Test
-    void returnsNoContextMessageWhenNothingRelevantIsFound() {
+    void returnsAnAnswerWithNoSourcesWhenNoChunksMatchButAToolCanStillAnswer() {
+        // Phase 7: e.g. "what's the status of claim CLM-2026-4821?" won't
+        // match any policy document, but the model can still answer via the
+        // getClaimStatus tool - so this should NOT fall back to NO_CONTEXT_ANSWER.
         when(vectorStore.similaritySearch(any(SearchRequest.class))).thenReturn(List.of());
+        stubChatClientToReturn("Your claim CLM-2026-4821 is currently under review.");
 
-        AiChatResponse response = aiAssistantService.answer("Does this cover international space travel?");
+        AiChatResponse response = aiAssistantService.answer("What's the status of claim CLM-2026-4821?");
 
-        assertThat(response.getAnswer()).isEqualTo(AiAssistantService.NO_CONTEXT_ANSWER);
+        assertThat(response.getAnswer()).isEqualTo("Your claim CLM-2026-4821 is currently under review.");
         assertThat(response.getSources()).isEmpty();
     }
 
@@ -91,10 +109,7 @@ class AiAssistantServiceTest {
     void returnsFallbackMessageWhenTheProviderReturnsAnEmptyResponse() {
         when(vectorStore.similaritySearch(any(SearchRequest.class)))
                 .thenReturn(List.of(sampleChunk("hospitalization-coverage.txt")));
-        when(chatClient.prompt()).thenReturn(requestSpec);
-        when(requestSpec.user(anyString())).thenReturn(requestSpec);
-        when(requestSpec.call()).thenReturn(callResponseSpec);
-        when(callResponseSpec.content()).thenReturn("   ");
+        stubChatClientToReturn("   ");
 
         AiChatResponse response = aiAssistantService.answer("Does my policy cover hospitalization?");
 
@@ -110,6 +125,34 @@ class AiAssistantServiceTest {
         AiChatResponse response = aiAssistantService.answer("Does my policy cover hospitalization?");
 
         assertThat(response.getAnswer()).isEqualTo(AiAssistantService.FALLBACK_ANSWER);
+        assertThat(response.getSources()).isEmpty();
+    }
+
+    @Test
+    void usesClaimPromptPathWhenQuestionMentionsClaim() {
+        when(vectorStore.similaritySearch(any(SearchRequest.class)))
+                .thenReturn(List.of(sampleChunk("claims-process.txt")));
+        stubChatClientToReturn("Your claim is currently under review.");
+
+        AiChatResponse response = aiAssistantService.answer("What's the status of my claim?");
+
+        assertThat(response.getAnswer()).isEqualTo("Your claim is currently under review.");
+        assertThat(response.getSources()).containsExactly("claims-process.txt");
+    }
+
+    @Test
+    void skipsVectorSearchAndRedirectsWhenQuestionIsOutOfScope() {
+        when(chatClient.prompt()).thenReturn(requestSpec);
+        when(requestSpec.system(anyString())).thenReturn(requestSpec);
+        when(requestSpec.user(anyString())).thenReturn(requestSpec);
+        when(requestSpec.call()).thenReturn(callResponseSpec);
+        when(callResponseSpec.content())
+                .thenReturn("I can only help with insurance-related questions - happy to help with those!");
+
+        AiChatResponse response = aiAssistantService.answer("What's the weather today?");
+
+        assertThat(response.getAnswer())
+                .isEqualTo("I can only help with insurance-related questions - happy to help with those!");
         assertThat(response.getSources()).isEmpty();
     }
 }

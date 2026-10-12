@@ -27,6 +27,13 @@ public class ClaimService {
                 .orElseThrow(() -> new ResourceNotFoundException("Claim not found with id: " + id));
     }
 
+    // Phase 7: added for the AI assistant's getClaimStatus tool, which looks
+    // claims up by their human-readable claim number rather than DB id.
+    public Claim getClaimByNumber(String claimNumber) {
+        return claimRepository.findByClaimNumber(claimNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("Claim not found with number: " + claimNumber));
+    }
+
     public List<Claim> getClaimsByPolicyId(Long policyId) {
         return claimRepository.findByPolicyId(policyId);
     }

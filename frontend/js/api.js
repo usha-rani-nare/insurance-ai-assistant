@@ -3,22 +3,66 @@
 
 const API_BASE_URL = "http://localhost:8081/api";
 
-// There's no login/session yet (that's a later phase), so every page acts as
-// this one demo user for now. Once real authentication exists, this constant
-// goes away and the user id comes from the logged-in session instead.
-const CURRENT_USER_ID = 1;
+// --- Session handling ---
+// After login the backend returns a JWT. We keep it in localStorage and send
+// it as "Authorization: Bearer ..." on every request. (localStorage is fine
+// for a portfolio project; a production app would usually prefer httpOnly
+// cookies so scripts can't read the token.)
+
+function getToken() {
+    return localStorage.getItem("authToken");
+}
+
+function saveSession(loginResponse) {
+    localStorage.setItem("authToken", loginResponse.token);
+    localStorage.setItem("userId", loginResponse.userId);
+    localStorage.setItem("userName", loginResponse.name);
+}
+
+function clearSession() {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userName");
+}
+
+function logout() {
+    clearSession();
+    window.location.href = "login.html";
+}
+
+const onLoginPage = window.location.pathname.endsWith("login.html");
+
+// Every page except login.html needs a logged-in user.
+if (!onLoginPage && !getToken()) {
+    window.location.href = "login.html";
+}
+
+// The pages still use CURRENT_USER_ID, but it now comes from the logged-in
+// session instead of being hardcoded to 1.
+const CURRENT_USER_ID = Number(localStorage.getItem("userId")) || null;
 
 // Wraps fetch() so every page handles errors the same way instead of each
 // page reinventing try/catch. Throws an Error with a readable message.
 async function apiRequest(path, options = {}) {
+    const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
+    const token = getToken();
+    if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+    }
+
     let response;
     try {
-        response = await fetch(`${API_BASE_URL}${path}`, {
-            headers: { "Content-Type": "application/json" },
-            ...options,
-        });
+        response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers });
     } catch (networkError) {
         throw new Error("Could not reach the server. Is the backend running?");
+    }
+
+    // Expired or invalid token: send the user back to login. The login
+    // request itself is excluded so a wrong password shows its own message.
+    if (response.status === 401 && path !== "/auth/login") {
+        clearSession();
+        window.location.href = "login.html";
+        throw new Error("Your session has expired. Please log in again.");
     }
 
     if (!response.ok) {
@@ -64,9 +108,6 @@ function registerUser(userData) {
     });
 }
 
-// Not wired up yet - there is no POST /api/auth/login endpoint yet (that's a
-// later phase). This exists so login.js has something real to call once it's
-// built, instead of the frontend inventing a fake response.
 function login(email, password) {
     return apiRequest("/auth/login", {
         method: "POST",
@@ -74,7 +115,6 @@ function login(email, password) {
     });
 }
 
-// Same idea for the AI assistant - the endpoint doesn't exist yet.
 function askAssistant(question) {
     return apiRequest("/ai/chat", {
         method: "POST",

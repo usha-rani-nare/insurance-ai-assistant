@@ -1,0 +1,59 @@
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+      MYSQL_DATABASE: insurance_assistant
+    ports:
+      - "3307:3306"        # host 3307 so it doesn't clash with a local MySQL on 3306
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  pgvector:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_PASSWORD: ${VECTOR_DB_PASSWORD:?Set VECTOR_DB_PASSWORD in .env}
+      POSTGRES_DB: insurance_vectors
+    ports:
+      - "5434:5432"        # host 5434 so it doesn't clash with pgvector-db (5433) or local Postgres (5432)
+    volumes:
+      - pgvector-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d insurance_vectors"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build: .
+    image: insurance-assistant
+    depends_on:
+      mysql:
+        condition: service_healthy
+      pgvector:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: insurance_assistant
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      VECTOR_DB_HOST: pgvector
+      VECTOR_DB_PORT: 5432
+      VECTOR_DB_NAME: insurance_vectors
+      VECTOR_DB_USERNAME: postgres
+      VECTOR_DB_PASSWORD: ${VECTOR_DB_PASSWORD}
+      GROQ_API_KEY: ${GROQ_API_KEY:?Set GROQ_API_KEY in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://127.0.0.1:5500}
+    ports:
+      - "8081:8081"
+
+volumes:
+  mysql-data:
+  pgvector-data:
