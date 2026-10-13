@@ -53,6 +53,12 @@ services:
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://127.0.0.1:5500}
     ports:
       - "8081:8081"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 90s
 
 volumes:
   mysql-data:

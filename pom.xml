@@ -76,6 +76,10 @@
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-transformers</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
                     <!-- Phase 8: security -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
