@@ -161,7 +161,7 @@ spring.sql.init.mode=always
 
 The seed users are inserted with plain-text demo passwords. On startup, `PasswordMigrationRunner` replaces any password that is not already a BCrypt hash with its hash. This is a dev/demo convenience only; a real project would ship hashed values in a migration instead.
 
-### How I'd explain this in an interview
+### How I'd explain ?
 
 "I used MySQL because the core data (users, policies, claims) is structured and relational: a claim always belongs to exactly one policy, a policy to exactly one user and one plan. I kept the JPA relationships one-directional to avoid the classic bidirectional-serialization problem, and I seed a small, realistic dataset through `data.sql` instead of inserting rows by hand every time I restart the app."
 
@@ -190,7 +190,7 @@ All endpoints except login and registration require an `Authorization: Bearer <t
 - **AI tools:** `getPolicyDetails`, `getClaimStatus` and `createClaim` only act on the logged-in user's own policies and claims. The model is not a security boundary, so the checks live in the tool code, not in the prompt.
 - **Error handling:** `GlobalExceptionHandler` returns the real status code for deliberate 403s instead of turning them into a generic 500.
 
-### How I'd explain this in an interview
+### How I'd explain ?
 
 "I added JWT authentication to my Spring Boot insurance assistant. Passwords are BCrypt-hashed, a filter validates the token on every request, and every endpoint checks that the data belongs to the logged-in user. I tested for IDOR by trying to read another account's data. The AI tool-calling agent uses the same checks, so the model can't be prompted into reading or filing against someone else's policy."
 
@@ -268,7 +268,7 @@ The API key never reaches the browser. The frontend only calls this app's own `/
 
 `AiChatRequest` requires a non-blank question, capped at 500 characters.
 
-### How I'd explain this in an interview
+### How I'd explain ?
 
 "I integrated the LLM through the Spring Boot backend using Spring AI, with Groq as the provider since it's OpenAI-API-compatible and has a free tier. The frontend only talks to my own `/api/ai/chat` endpoint and never sees the API key. Any failure from the AI provider returns one safe fallback message instead of leaking an error, while the real cause is logged on the backend."
 
@@ -339,7 +339,7 @@ docker run -d --name pgvector-db -p 5433:5432 -e POSTGRES_PASSWORD=postgres pgve
 
 Port 5433 is used on the host because a locally installed PostgreSQL commonly occupies 5432 (check with `netstat -ano | findstr :5432` on Windows). On first run, look for "Ingested N chunks from 4 policy documents" in the logs.
 
-### How I'd explain this in an interview
+### How I'd explain ?
 
 "For RAG I added PostgreSQL with the pgvector extension alongside MySQL: MySQL still handles application data, and Postgres only stores document embeddings. I used a local open-source embedding model because Groq doesn't offer embeddings. On startup the app reads the policy documents, chunks and embeds them. When a user asks a question I do a similarity search, pass only the relevant chunks to the LLM, and return the answer with its sources. If nothing relevant is found, it says so instead of guessing."
 
@@ -387,7 +387,7 @@ Not covered yet: end-to-end tests against real MySQL/pgvector (for example with 
 - **`.dockerignore`** keeps `.env`, `target/` and `.git` out of the image.
 - **`.github/workflows/ci.yml`**: on every push and pull request to `main`, GitHub Actions runs `mvn test`, and only if that passes does it build the Docker image. The badge at the top of this README shows the status.
 
-### How I'd explain this in an interview
+### How I'd explain this?
 
 "I containerised the app with a multi-stage Dockerfile and a Compose file that runs the Spring Boot backend, MySQL and a pgvector Postgres together, with health checks so the app only starts when both databases are ready and secrets passed through environment variables. GitHub Actions runs the test suite on a clean machine on every push, and only builds the Docker image if the tests pass."
 
@@ -399,3 +399,7 @@ Not covered yet: end-to-end tests against real MySQL/pgvector (for example with 
 - The frontend is not containerized; it is served separately as static files.
 - Monitoring (Spring Boot Actuator health endpoint) and a Postman collection are planned.
 - Integration tests against real databases (Testcontainers) and automated tests against the live LLM are not included.
+
+## Phase 12: Monitoring with Spring Boot Actuator.
+
+- **Monitoring:** Spring Boot Actuator exposes a public /actuator/health endpoint (UP/DOWN only) that Docker uses as the backend health check; all other actuator endpoints require a login.
