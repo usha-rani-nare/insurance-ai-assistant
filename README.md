@@ -21,6 +21,9 @@ This is the single highest-value addition for anyone browsing this repo. -->
 - The assistant says "I don't know" when a question falls outside the available documents, instead of inventing coverage details
 - **Docker Compose** setup that runs the backend, MySQL and pgvector Postgres together
 - **GitHub Actions CI** that runs the tests and builds the Docker image on every push and pull request
+- **Monitoring:** Spring Boot Actuator exposes a public `/actuator/health` endpoint (UP/DOWN only) that Docker uses as the backend health check; all other actuator endpoints require a login
+- **Consistent error handling:** client mistakes (malformed JSON, wrong method, bad id, unknown URL) return proper 4xx responses with a readable message instead of a generic 500
+- A **Postman collection** with the main requests, the security checks (401/403) and the error cases
 
 ## Tech stack
 
@@ -28,8 +31,8 @@ This is the single highest-value addition for anyone browsing this repo. -->
 **Databases:** MySQL (application data), PostgreSQL + pgvector (embeddings)
 **AI:** Groq (LLM), local ONNX embeddings (`all-MiniLM-L6-v2`)
 **Frontend:** HTML, CSS, vanilla JavaScript
-**Testing:** JUnit 5, Mockito, Spring MockMvc (41 tests, all passing)
-**DevOps:** Docker, Docker Compose, GitHub Actions
+**Testing:** JUnit 5, Mockito, Spring MockMvc (46 tests, all passing)
+**DevOps:** Docker, Docker Compose, GitHub Actions, Spring Boot Actuator
 
 ## Project structure
 
@@ -46,6 +49,7 @@ src/main/java/com/insurance/assistant/
 
 src/main/resources/documents/   sample policy documents (RAG source material)
 src/test/java/                  unit and web-layer tests
+docs/postman/                   Postman collection
 frontend/                       plain HTML/CSS/JS UI
 Dockerfile, docker-compose.yml  container setup
 .github/workflows/ci.yml        CI pipeline
@@ -104,10 +108,13 @@ The backend listens on port **8081**.
 - **Phase 6**: Prompt engineering: separate system prompts for policy, claim and out-of-scope questions, with simple routing.
 - **Phase 7**: AI agent with tool calling (`getPolicyDetails`, `getClaimStatus`, `createClaim`).
 - **Phase 8**: Security: BCrypt password hashing, JWT login, per-user authorization (including the AI tools).
-- **Phase 9**: Testing: JWT, password hashing, AI tool ownership and HTTP-level security tests (41 tests in total).
+- **Phase 9**: Testing: JWT, password hashing, AI tool ownership and HTTP-level security tests (41 tests at that point).
 - **Phase 10**: Docker and Docker Compose.
 - **Phase 11**: CI with GitHub Actions.
-- *Not yet built:* monitoring (Spring Boot Actuator), a Postman collection, and the items under [Known limitations](#known-limitations-and-future-improvements).
+- **Phase 12**: Monitoring with Spring Boot Actuator and a Docker health check.
+- **Phase 13**: Error handling: client mistakes mapped to 4xx responses, with tests (46 tests in total).
+- **Phase 14**: Postman collection.
+- *Not built yet:* the items under [Known limitations](#known-limitations-and-future-improvements).
 
 ## Database (Phase 2)
 
@@ -161,7 +168,7 @@ spring.sql.init.mode=always
 
 The seed users are inserted with plain-text demo passwords. On startup, `PasswordMigrationRunner` replaces any password that is not already a BCrypt hash with its hash. This is a dev/demo convenience only; a real project would ship hashed values in a migration instead.
 
-### How I'd explain ?
+### How I'd explain this in an interview
 
 "I used MySQL because the core data (users, policies, claims) is structured and relational: a claim always belongs to exactly one policy, a policy to exactly one user and one plan. I kept the JPA relationships one-directional to avoid the classic bidirectional-serialization problem, and I seed a small, realistic dataset through `data.sql` instead of inserting rows by hand every time I restart the app."
 
@@ -180,6 +187,7 @@ All endpoints except login and registration require an `Authorization: Bearer <t
 | GET | `/api/claims/policy/{policyId}` | Token | Only for your own policies, 404 otherwise |
 | POST | `/api/claims` | Token | Policy must belong to you (404 otherwise); generates a claim number, 201 |
 | POST | `/api/ai/chat` | Token | Question in, `{answer, sources}` out. Grounded in the policy documents via RAG, with tool calling for live policy/claim data. Returns a safe fallback message on any AI provider or vector-search failure |
+| GET | `/actuator/health` | Public | `{"status":"UP"}` or `DOWN` only, no details. Other actuator endpoints need a token |
 
 ## Security (Phase 8)
 
@@ -190,7 +198,7 @@ All endpoints except login and registration require an `Authorization: Bearer <t
 - **AI tools:** `getPolicyDetails`, `getClaimStatus` and `createClaim` only act on the logged-in user's own policies and claims. The model is not a security boundary, so the checks live in the tool code, not in the prompt.
 - **Error handling:** `GlobalExceptionHandler` returns the real status code for deliberate 403s instead of turning them into a generic 500.
 
-### How I'd explain ?
+### How I'd explain this in an interview
 
 "I added JWT authentication to my Spring Boot insurance assistant. Passwords are BCrypt-hashed, a filter validates the token on every request, and every endpoint checks that the data belongs to the logged-in user. I tested for IDOR by trying to read another account's data. The AI tool-calling agent uses the same checks, so the model can't be prompted into reading or filing against someone else's policy."
 
@@ -268,7 +276,7 @@ The API key never reaches the browser. The frontend only calls this app's own `/
 
 `AiChatRequest` requires a non-blank question, capped at 500 characters.
 
-### How I'd explain ?
+### How I'd explain this in an interview
 
 "I integrated the LLM through the Spring Boot backend using Spring AI, with Groq as the provider since it's OpenAI-API-compatible and has a free tier. The frontend only talks to my own `/api/ai/chat` endpoint and never sees the API key. Any failure from the AI provider returns one safe fallback message instead of leaking an error, while the real cause is logged on the backend."
 
@@ -339,7 +347,7 @@ docker run -d --name pgvector-db -p 5433:5432 -e POSTGRES_PASSWORD=postgres pgve
 
 Port 5433 is used on the host because a locally installed PostgreSQL commonly occupies 5432 (check with `netstat -ano | findstr :5432` on Windows). On first run, look for "Ingested N chunks from 4 policy documents" in the logs.
 
-### How I'd explain ?
+### How I'd explain this in an interview
 
 "For RAG I added PostgreSQL with the pgvector extension alongside MySQL: MySQL still handles application data, and Postgres only stores document embeddings. I used a local open-source embedding model because Groq doesn't offer embeddings. On startup the app reads the policy documents, chunks and embeds them. When a user asks a question I do a similarity search, pass only the relevant chunks to the LLM, and return the answer with its sources. If nothing relevant is found, it says so instead of guessing."
 
@@ -367,7 +375,7 @@ Run all tests with:
 mvn test
 ```
 
-The tests need no running database or API key. Repositories and the AI model are mocked, so the suite runs in about ten seconds. 41 tests, all passing.
+The tests need no running database or API key. Repositories and the AI model are mocked, so the suite runs in about ten seconds. 46 tests, all passing.
 
 | Area | Test class | What it checks |
 |---|---|---|
@@ -376,6 +384,7 @@ The tests need no running database or API key. Repositories and the AI model are
 | JWT | `JwtServiceTest` | Valid tokens pass; forged, expired and garbage tokens are rejected |
 | Passwords | `UserServicePasswordTest` | Passwords are stored as BCrypt hashes; duplicate emails are refused and nothing is saved |
 | AI tools | `InsuranceToolsTest` | The tools only see the logged-in user's policies and claims; a claim on someone else's policy is refused and never saved |
+| Error handling | `GlobalExceptionHandlerTest` | Malformed JSON gives 400, wrong HTTP method 405, wrong content type 415, non-numeric id 400, unknown URL 404 (each with a readable message, never a 500) |
 | HTTP security | `SecurityEndpointsTest` | `@WebMvcTest` + `MockMvc` through the real filter chain: correct login returns a token; wrong password, unknown email, missing token or a bad token gives 401; another user's data gives 403 or 404 |
 
 Not covered yet: end-to-end tests against real MySQL/pgvector (for example with Testcontainers) and calls to the live LLM.
@@ -387,9 +396,41 @@ Not covered yet: end-to-end tests against real MySQL/pgvector (for example with 
 - **`.dockerignore`** keeps `.env`, `target/` and `.git` out of the image.
 - **`.github/workflows/ci.yml`**: on every push and pull request to `main`, GitHub Actions runs `mvn test`, and only if that passes does it build the Docker image. The badge at the top of this README shows the status.
 
-### How I'd explain this?
+### How I'd explain this in an interview
 
 "I containerised the app with a multi-stage Dockerfile and a Compose file that runs the Spring Boot backend, MySQL and a pgvector Postgres together, with health checks so the app only starts when both databases are ready and secrets passed through environment variables. GitHub Actions runs the test suite on a clean machine on every push, and only builds the Docker image if the tests pass."
+
+## Monitoring (Phase 12)
+
+Spring Boot Actuator exposes `GET /actuator/health`. It reports `UP` only while the app can reach its databases and `DOWN` (HTTP 503) otherwise. The endpoint is public, but `management.endpoint.health.show-details=never` means anonymous callers only see the status, so nothing internal leaks. Only `health` and `info` are exposed, and `SecurityConfig` keeps every other actuator path behind a login (`/actuator/info` returns 401 without a token).
+
+Docker uses the same endpoint as the backend container's health check, so `docker compose ps` shows `healthy` once the app is really ready.
+
+### How I'd explain this in an interview
+
+"I added Spring Boot Actuator so the app exposes a health endpoint that checks its database connections. Only `/actuator/health` is public and it returns just UP or DOWN, so nothing internal leaks. Everything else under actuator requires a login. Docker uses the same endpoint to decide whether the backend container is healthy."
+
+## Error handling (Phase 13)
+
+`GlobalExceptionHandler` turns exceptions into JSON error responses with the right status code:
+
+| Situation | Status |
+|---|---|
+| Resource not found, or someone else's policy/claim | 404 |
+| Ownership check failed (another user's profile or policies) | 403 |
+| Validation failure on a request body | 400 with a list of field messages |
+| Malformed or unreadable JSON, non-numeric id | 400 |
+| Wrong HTTP method | 405 |
+| Wrong content type | 415 |
+| Unknown URL | 404 |
+| Duplicate email, or a database constraint violation | 409 |
+| Anything unexpected | 500, logged on the server, with a generic message |
+
+The first version only handled my own exceptions, so errors Spring raises before a controller runs fell through to the catch-all and came back as 500s. A 500 means "the server broke", so those client mistakes now get specific handlers, and `GlobalExceptionHandlerTest` checks each one.
+
+## Postman collection (Phase 14)
+
+Import `docs/postman/insurance-assistant.postman_collection.json` into Postman, start the backend, then run **1. Auth > Login** first. It stores the JWT and user id in collection variables that every other request uses. The collection has 18 requests: login and registration, the user's own data, the AI assistant (a RAG question and a tool call), the security checks (401 and 403), the error-handling cases (400 and 405) and the health check. Every request has a test, so **Run collection** reports pass or fail for all of them (20 checks).
 
 ## Known limitations and future improvements
 
@@ -397,9 +438,5 @@ Not covered yet: end-to-end tests against real MySQL/pgvector (for example with 
 - No refresh tokens, password reset, or rate limiting on login yet.
 - Demo seed users use a known password and are for local development only.
 - The frontend is not containerized; it is served separately as static files.
-- Monitoring (Spring Boot Actuator health endpoint) and a Postman collection are planned.
 - Integration tests against real databases (Testcontainers) and automated tests against the live LLM are not included.
-
-## Phase 12: Monitoring with Spring Boot Actuator.
-
-- **Monitoring:** Spring Boot Actuator exposes a public /actuator/health endpoint (UP/DOWN only) that Docker uses as the backend health check; all other actuator endpoints require a login.
+- Only the health endpoint is exposed for monitoring; metrics and dashboards (for example Prometheus and Grafana) are not set up.
